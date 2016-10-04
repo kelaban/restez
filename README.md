@@ -5,7 +5,7 @@ An easier REST framework for Java. Inspired by ExpressJS for NodeJS.
 
 Example setup with Jetty
 
-```
+```java
 Router router = new Router();
 
 // Setup some default middleware
