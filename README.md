@@ -36,7 +36,7 @@ router.get("/:name", (req, res) -> {
 Router subrouter = new Router();
 
 subrouter.get("/bar", (req, res) -> {
-  Assert.assertEquals(req.path, "/foo/bar");
+  Assert.assertEquals(req.path(), "/foo/bar");
 });
 
 router.use("/foo", subrouter);
