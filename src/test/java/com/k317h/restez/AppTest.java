@@ -41,7 +41,7 @@ public class AppTest {
   
   
   public void initServer() throws Exception {
-    server = new Server(8080);
+    server = new Server(port);
 
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
