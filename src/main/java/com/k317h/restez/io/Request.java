@@ -65,7 +65,7 @@ public class Request {
   }
 
 
-  public InputStream getInputStream() throws IOException {
+  public InputStream inputStream() throws IOException {
     return httpServletRequest.getInputStream();
   }
   
@@ -76,7 +76,7 @@ public class Request {
     return body.getOrSet(() -> {
       StringWriter sw = new StringWriter();
       try {
-        IOUtils.copy(getInputStream(), sw, Charset.forName("UTF-8"));
+        IOUtils.copy(inputStream(), sw, Charset.forName("UTF-8"));
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

@@ -42,6 +42,9 @@ public class Application extends HttpServlet {
     } catch(Exception e) {
       httpRes.setStatus(500);
     }
+    
+    httpRes.getOutputStream().flush();
+    httpRes.getOutputStream().close();
   }
   
   private void handleTopLevelMiddlewaresOnly(Request request, Response response, Iterator<Middleware> middlewares) throws Exception {

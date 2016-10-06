@@ -40,7 +40,9 @@ public class GZIPMiddleware implements Middleware {
     next.handle(req, res);
     
     if(usingGzipResponse) {
+      
       ((GZIPOutputStream) res.outputStream()).finish();
+      res.outputStream().flush();
     }
   }
   
@@ -49,11 +51,11 @@ public class GZIPMiddleware implements Middleware {
     
     public GZippedRequest(Request in) throws IOException {
       super(in.rawRequest(), in.matchedParams());
-      gis = new GZIPInputStream(in.getInputStream());
+      gis = new GZIPInputStream(in.inputStream());
     }
     
     @Override
-    public InputStream getInputStream() throws IOException {   
+    public InputStream inputStream() throws IOException {   
       return gis;    
     }
 
@@ -75,7 +77,7 @@ public class GZIPMiddleware implements Middleware {
   }
   
   private static boolean isGzipEncoded(String encoding) {
-    return "gzip".equals(encoding) || "deflate".equals(encoding);
+    return null != encoding && ("gzip".contains(encoding) || "deflate".contains(encoding));
   }
 
 }

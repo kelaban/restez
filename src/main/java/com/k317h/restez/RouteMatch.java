@@ -92,25 +92,26 @@ public class RouteMatch {
     Set<String> matchGroups = new HashSet<String>();
 
     if (pathParts.length == 0) {
-      patt = Pattern.compile("/?");
+      patt = Pattern.compile("^/?$");
     } else {
       StringBuilder regexp = new StringBuilder("^");
   
       for (String p : pathParts) {
+        if(hasSplat) {
+          throw new IllegalArgumentException("A nothing allowed after splat: " + path);
+        }
+        
         regexp.append("/");
   
         if (p.startsWith(":")) {
           String paramName = p.substring(1);
           
           if(!matchGroups.add(paramName)) {
-            throw new IllegalArgumentException(path + "contains two params named '" + paramName + "'");
+            throw new IllegalArgumentException(path + " contains two params named '" + paramName + "'");
           }
 
           regexp.append("(?<").append(Pattern.quote(paramName)).append(">").append("[^/]+)");
         } else if (p.equals("*")) {
-          if(hasSplat) {
-            throw new IllegalArgumentException(path + " cannot contain more than one splat");
-          }
           hasSplat = true;
           regexp.append("?(?<splat>.*)");
         } else {

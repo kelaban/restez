@@ -36,6 +36,7 @@ public class BufferedSend implements Middleware {
     
     public void finish() throws IOException {
       buff.writeTo(super.outputStream());
+      super.outputStream().flush();
     }
     
     public long bufferSize() {
