@@ -10,6 +10,11 @@ import com.k317h.restez.Middleware;
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 
+/**
+ * 
+ * Buffers output to set content length
+ *
+ */
 public class BufferedSend implements Middleware {
 
   @Override

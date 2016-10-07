@@ -83,7 +83,6 @@ public class AppTest {
     httpclient.close();
   }
   
-  
   private CloseableHttpResponse get(String path) throws Exception {
     CloseableHttpResponse res = httpclient.execute(new HttpGet(u(path)));
     log.info("{}", res.toString());

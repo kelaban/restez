@@ -52,6 +52,14 @@ public final class Router {
   public Router delete(String path, Handler handler, Middleware... mw) {
     return route(path, HttpMethod.delete, handler, mw);
   }
+  
+  public Router head(String path, Handler handler, Middleware... mw) {
+    return route(path, HttpMethod.head, handler, mw);
+  }
+  
+  public Router options(String path, Handler handler, Middleware... mw) {
+    return route(path, HttpMethod.options, handler, mw);
+  }
 
   public Router route(String path, HttpMethod verb, Handler handler, Middleware... mw) {
     return route(path, verb, handler, Arrays.asList(mw));

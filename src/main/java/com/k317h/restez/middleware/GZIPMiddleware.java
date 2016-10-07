@@ -40,10 +40,10 @@ public class GZIPMiddleware implements Middleware {
     next.handle(req, res);
     
     if(usingGzipResponse) {
-      
       ((GZIPOutputStream) res.outputStream()).finish();
-      res.outputStream().flush();
     }
+    
+    res.outputStream().flush();
   }
   
   public static class GZippedRequest extends Request {
