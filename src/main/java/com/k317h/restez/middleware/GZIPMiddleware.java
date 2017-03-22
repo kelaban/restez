@@ -42,8 +42,6 @@ public class GZIPMiddleware implements Middleware {
     if(usingGzipResponse) {
       ((GZIPOutputStream) res.outputStream()).finish();
     }
-    
-    res.outputStream().flush();
   }
   
   public static class GZippedRequest extends Request {
