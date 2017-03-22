@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.k317h.restez.route.RouteMatch;
+import com.k317h.restez.route.RouteSpec;
 
 import util.PathUtils;
 
@@ -27,7 +29,14 @@ public final class Router {
 
   public Router use(String path, Router router) {
     for (RouteMatch rm : router.getRouteMatches()) {
-      route(PathUtils.concatPath(path, rm.getPath()), rm.getMethod(), rm.getHandler(), rm.getMiddleware());
+      
+      //TODO clone routespec
+      route(RouteSpec.builder()
+          .path(PathUtils.concatPath(path, rm.getSpec().getPath()))
+          .verb(rm.getSpec().getVerb())
+          .build(), 
+          rm.getHandler(), 
+          rm.getMiddleware());
     }
 
     return this;
@@ -62,13 +71,19 @@ public final class Router {
   }
 
   public Router route(String path, HttpMethod verb, Handler handler, Middleware... mw) {
-    return route(path, verb, handler, Arrays.asList(mw));
+    return route(RouteSpec.builder().path(path).verb(verb).build(), handler, mw);
+  }
+  
+  public Router route(RouteSpec spec, Handler handler, Middleware... mw) {
+    return route(spec, handler, Arrays.asList(mw));
   }
 
-  public Router route(String path, HttpMethod verb, Handler handler, Collection<Middleware> mw) {
-    routeMatches.add(new RouteMatch(path, verb, handler, concatMiddleware(middleware, mw)));
+  private Router route(RouteSpec spec, Handler handler, Collection<Middleware> mw) {
+    routeMatches.add(new RouteMatch(spec, handler, concatMiddleware(middleware, mw)));
     return this;
   }
+  
+  
 
   public Collection<RouteMatch> getRouteMatches() {
     return routeMatches;

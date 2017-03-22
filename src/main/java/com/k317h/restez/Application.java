@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
+import com.k317h.restez.route.RouteMatch;
 
 public class Application extends HttpServlet {
   private Router router;
@@ -24,7 +25,7 @@ public class Application extends HttpServlet {
     try {
       Optional<RouteMatch> route = router.getRouteMatches()
           .stream()
-          .filter(rm -> rm.matches(HttpMethod.valueOf(httpReq.getMethod().toLowerCase()), httpReq.getRequestURI())).findFirst();
+          .filter(rm -> rm.matches(httpReq)).findFirst();
       
       if (route.isPresent()) {
         Request request = new Request(httpReq, route.get().parsePathParam(httpReq.getRequestURI()));
@@ -42,9 +43,7 @@ public class Application extends HttpServlet {
     } catch(Exception e) {
       httpRes.setStatus(500);
     }
-    
-    httpRes.getOutputStream().flush();
-    httpRes.getOutputStream().close();
+ 
   }
   
   private void handleTopLevelMiddlewaresOnly(Request request, Response response, Iterator<Middleware> middlewares) throws Exception {

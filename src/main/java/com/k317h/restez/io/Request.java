@@ -14,8 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 
 import com.k317h.restez.HttpMethod;
-import com.k317h.restez.RouteMatch;
-import com.k317h.restez.RouteMatch.PathParams;
+import com.k317h.restez.route.RegexPathMatcher.PathParams;
 
 import util.AtomicSingleton;
 
