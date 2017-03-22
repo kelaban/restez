@@ -3,7 +3,6 @@ package com.k317h.restez;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -24,9 +23,7 @@ public class Application extends HttpServlet {
   @Override
   protected void service(HttpServletRequest httpReq, HttpServletResponse httpRes) throws ServletException, IOException {
     try {
-      Optional<RouteMatch> route = router.getRouteMatches()
-          .stream()
-          .filter(rm -> rm.matches(httpReq)).findFirst();
+      Optional<RouteMatch> route = router.match(httpReq);
       
       if (route.isPresent()) {
         Request request = new Request(httpReq, route.get().parsePathParam(httpReq.getRequestURI()));

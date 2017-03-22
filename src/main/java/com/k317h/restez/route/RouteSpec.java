@@ -22,7 +22,13 @@ public class RouteSpec {
   public boolean matches(HttpServletRequest request) {
     HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod().toLowerCase());
     String path = request.getRequestURI();
-    return requestMethod.equals(verb) && regexPath.matches(path);
+
+    boolean isRequestingHead = requestMethod.equals(HttpMethod.head);
+    boolean isActuallyGet = verb.equals(HttpMethod.get);
+    
+    boolean verbMatches = requestMethod.equals(verb) || (isRequestingHead && isActuallyGet);
+
+    return verbMatches && regexPath.matches(path);
   }
   
   public String getPath() {

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.collect.ImmutableList;
 import com.k317h.restez.route.RouteMatch;
@@ -82,9 +85,14 @@ public final class Router {
     routeMatches.add(new RouteMatch(spec, handler, concatMiddleware(middleware, mw)));
     return this;
   }
+ 
+  public Optional<RouteMatch> match(HttpServletRequest httpReq) {
+    return getRouteMatches()
+      .stream()
+      .filter(rm -> rm.matches(httpReq))
+      .findFirst();
+  }
   
-  
-
   public Collection<RouteMatch> getRouteMatches() {
     return routeMatches;
   }

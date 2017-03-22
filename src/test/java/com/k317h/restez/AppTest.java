@@ -5,9 +5,11 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -89,6 +91,12 @@ public class AppTest {
     return res;
   }
   
+  private CloseableHttpResponse head(String path) throws Exception {
+    CloseableHttpResponse res = httpclient.execute(new HttpHead(u(path)));
+    log.info("{}", res.toString());
+    return res;
+  }
+  
   private CloseableHttpResponse post(String path, String body) throws Exception {
     HttpPost post = new HttpPost(u(path));
     post.setEntity(new StringEntity(body));
@@ -103,13 +111,20 @@ public class AppTest {
     assertResponse(get(path), path);
   }
   
+  private void assertHead(String path) throws Exception{
+    assertResponse(head(path), null);
+  }
+  
   private void assertResponse(CloseableHttpResponse resp, String body) throws Exception {
     assertResponse(resp, body, 200);
   }
   
   private void assertResponse(CloseableHttpResponse resp, String body, int status) throws Exception {
     Assert.assertEquals(status, resp.getStatusLine().getStatusCode());
-    Assert.assertEquals(body, IOUtils.toString(resp.getEntity().getContent(), Charset.forName("UTF-8")));
+    
+    HttpEntity entity = resp.getEntity(); 
+    String actualBody = null != entity ? IOUtils.toString(entity.getContent(), Charset.forName("UTF-8")) : null;   
+    Assert.assertEquals(body, actualBody);
   }
   
   private void echoPath(Request req, Response res) throws IOException {
@@ -134,6 +149,8 @@ public class AppTest {
     assertGet("/a/b/c");
     assertGet("/a/b/cc");
     assertGet("/a/b/c/param");
+    
+    assertHead("/a/b/c");
   }
   
   @Test

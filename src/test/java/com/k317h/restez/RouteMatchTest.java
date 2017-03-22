@@ -110,10 +110,10 @@ public class RouteMatchTest {
     for(HttpMethod m: HttpMethod.values()) {
       RouteMatch rm = new RouteMatch(s("/", m), null, null);
       for(HttpMethod m2: HttpMethod.values()) {
-        if(m.equals(m2)) {
-          Assert.assertTrue(rm.matches(req(m2, "/")));
+        if(m.equals(m2) || (m == HttpMethod.get && m2 == HttpMethod.head)) {
+          Assert.assertTrue(String.format("Expected verb '%s' to match '%s'", m, m2), rm.matches(req(m2, "/")));
         } else {
-          Assert.assertFalse(rm.matches(req(m2, "/")));
+          Assert.assertFalse(String.format("Expected verb '%s' not to match '%s'", m, m2), rm.matches(req(m2, "/")));
         }
       }
     }
