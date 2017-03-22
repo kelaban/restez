@@ -3,6 +3,7 @@ package com.k317h.restez;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -38,7 +39,7 @@ public class Application extends HttpServlet {
         }
       } else {
         httpRes.setStatus(404);
-        handleTopLevelMiddlewaresOnly(new Request(httpReq, null), new Response(httpRes), router.getMiddleware().iterator());
+        handleRouteMatch(new Request(httpReq, null), new Response(httpRes), null, router.getMiddleware().iterator());
       }
     } catch(Exception e) {
       httpRes.setStatus(500);
@@ -46,21 +47,14 @@ public class Application extends HttpServlet {
  
   }
   
-  private void handleTopLevelMiddlewaresOnly(Request request, Response response, Iterator<Middleware> middlewares) throws Exception {
-    if (middlewares.hasNext()) {
-      middlewares.next().handle(request, response, (req, res) -> {
-        handleTopLevelMiddlewaresOnly(req, res, middlewares);
-      });
-    }
-  }
   
   private void handleRouteMatch(Request request, Response response, Handler h, Iterator<Middleware> middlewares) throws Exception {
-    if (!middlewares.hasNext()) {
-      h.handle(request, response);
-    } else {
+    if(middlewares.hasNext()) {
       middlewares.next().handle(request, response, (req, res) -> {
         handleRouteMatch(req, res, h, middlewares);
       });
+    } else if(null != h) {
+      h.handle(request, response);
     }
   }
 
