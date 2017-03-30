@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
+import com.k317h.restez.route.RouteMatch;
 
 public class Application extends HttpServlet {
   private Router router;
@@ -22,9 +23,7 @@ public class Application extends HttpServlet {
   @Override
   protected void service(HttpServletRequest httpReq, HttpServletResponse httpRes) throws ServletException, IOException {
     try {
-      Optional<RouteMatch> route = router.getRouteMatches()
-          .stream()
-          .filter(rm -> rm.matches(HttpMethod.valueOf(httpReq.getMethod().toLowerCase()), httpReq.getRequestURI())).findFirst();
+      Optional<RouteMatch> route = router.match(httpReq);
       
       if (route.isPresent()) {
         Request request = new Request(httpReq, route.get().parsePathParam(httpReq.getRequestURI()));
@@ -37,28 +36,22 @@ public class Application extends HttpServlet {
         }
       } else {
         httpRes.setStatus(404);
-        handleTopLevelMiddlewaresOnly(new Request(httpReq, null), new Response(httpRes), router.getMiddleware().iterator());
+        handleRouteMatch(new Request(httpReq, null), new Response(httpRes), null, router.getMiddleware().iterator());
       }
     } catch(Exception e) {
       httpRes.setStatus(500);
     }
+ 
   }
   
-  private void handleTopLevelMiddlewaresOnly(Request request, Response response, Iterator<Middleware> middlewares) throws Exception {
-    if (middlewares.hasNext()) {
-      middlewares.next().handle(request, response, (req, res) -> {
-        handleTopLevelMiddlewaresOnly(req, res, middlewares);
-      });
-    }
-  }
   
   private void handleRouteMatch(Request request, Response response, Handler h, Iterator<Middleware> middlewares) throws Exception {
-    if (!middlewares.hasNext()) {
-      h.handle(request, response);
-    } else {
+    if(middlewares.hasNext()) {
       middlewares.next().handle(request, response, (req, res) -> {
         handleRouteMatch(req, res, h, middlewares);
       });
+    } else if(null != h) {
+      h.handle(request, response);
     }
   }
 

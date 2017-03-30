@@ -18,19 +18,22 @@ public class Response {
   }
 
 
-  public void send(String body) throws IOException {
+  public Response send(String body) throws IOException {
     outputStream().write(body.getBytes());
+    return this;
   }
   
-  public void json(String body) throws IOException {
+  public Response json(String body) throws IOException {
     contentType("application/json");
     send(body);
+    return this;
   }
 
 
-  public void send(InputStream is) throws IOException {
+  public Response send(InputStream is) throws IOException {
     OutputStream os = outputStream();
     IOUtils.copy(is, os);
+    return this;
   }
   
 
@@ -49,13 +52,15 @@ public class Response {
   }
 
 
-  public void status(int status) {
+  public Response status(int status) {
     httpServletResponse.setStatus(status);
+    return this;
   }
 
 
-  public void header(String key, String value) {
+  public Response header(String key, String value) {
     httpServletResponse.addHeader(key, value);
+    return this;
   }
   
   public HttpServletResponse rawResponse() {
