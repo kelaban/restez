@@ -37,16 +37,22 @@ public class LoggingMiddleware implements Middleware {
   private final String formatStr;
   
   //protected getFormatters for extensibility
-  private Map<String, LogTokenFormatter> formatters = getFormatters();
+  private Map<String, LogTokenFormatter> formatters;
   
   public LoggingMiddleware() {
     this(SHORT_FORMAT);
   }
   
   public LoggingMiddleware(String formatStr) {
-    assertFormatStrIsLegit(formatStr);
-    
+    this(formatStr, Collections.emptyMap());
+  }
+  
+  public LoggingMiddleware(String formatStr, Map<String, LogTokenFormatter> customFormatters) {
     this.formatStr = formatStr;
+    this.formatters = getFormatters(customFormatters);
+    
+
+    assertFormatStrIsLegit(formatStr);
   }
   
   
@@ -61,7 +67,7 @@ public class LoggingMiddleware implements Middleware {
   }
 
   @FunctionalInterface
-  protected interface LogTokenFormatter {
+  public interface LogTokenFormatter {
     public String format(Request req, Response res, String arg);
   }
 
@@ -90,7 +96,7 @@ public class LoggingMiddleware implements Middleware {
     log.info(sb.toString());
   }
   
-  protected Map<String, LogTokenFormatter> getFormatters() {
+  protected Map<String, LogTokenFormatter> getFormatters(Map<String, LogTokenFormatter> customFormatters) {
     Map<String, LogTokenFormatter> m = new HashMap<>(); 
     m.put("remote-addr", this::remoteAddress); 
     m.put("remote-user", this::remoteUser);
@@ -105,6 +111,8 @@ public class LoggingMiddleware implements Middleware {
     m.put("date", this::date);
     m.put("referrer", this::referrer);
     m.put("user-agent", this::userAgent);
+    
+    m.putAll(customFormatters);
     
     return Collections.unmodifiableMap(m);
   }
