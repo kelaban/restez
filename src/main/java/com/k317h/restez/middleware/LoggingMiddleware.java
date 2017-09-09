@@ -3,7 +3,9 @@ package com.k317h.restez.middleware;
 import java.lang.invoke.MethodHandles;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -12,7 +14,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
 import com.k317h.restez.Handler;
 import com.k317h.restez.Middleware;
 import com.k317h.restez.io.Request;
@@ -90,21 +91,22 @@ public class LoggingMiddleware implements Middleware {
   }
   
   protected Map<String, LogTokenFormatter> getFormatters() {
-    return ImmutableMap.<String, LogTokenFormatter>builder()
-      .put("remote-addr", this::remoteAddress) 
-      .put("remote-user", this::remoteUser)
-      .put("method", this::method)
-      .put("url", this::url)
-      .put("http-version", this::httpVersion)
-      .put("scheme", this::scheme)
-      .put("status", this::status)
-      .put("res", this::respHeader)
-      .put("req", this::reqHeader)
-      .put("response-time", this::respTime)
-      .put("date", this::date)
-      .put("referrer", this::referrer)
-      .put("user-agent", this::userAgent)
-    .build();
+    Map<String, LogTokenFormatter> m = new HashMap<>(); 
+    m.put("remote-addr", this::remoteAddress); 
+    m.put("remote-user", this::remoteUser);
+    m.put("method", this::method);
+    m.put("url", this::url);
+    m.put("http-version", this::httpVersion);
+    m.put("scheme", this::scheme);
+    m.put("status", this::status);
+    m.put("res", this::respHeader);
+    m.put("req", this::reqHeader);
+    m.put("response-time", this::respTime);
+    m.put("date", this::date);
+    m.put("referrer", this::referrer);
+    m.put("user-agent", this::userAgent);
+    
+    return Collections.unmodifiableMap(m);
   }
   
   protected String remoteAddress(Request req, Response res, String arg) {

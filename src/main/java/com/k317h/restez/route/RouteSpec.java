@@ -1,8 +1,9 @@
 package com.k317h.restez.route;
 
+import java.util.Objects;
+
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.base.Preconditions;
 import com.k317h.restez.HttpMethod;
 
 public class RouteSpec {
@@ -11,8 +12,8 @@ public class RouteSpec {
   private final HttpMethod verb;
   
   private RouteSpec(String path, HttpMethod verb) {
-    Preconditions.checkNotNull(path, "Path cannot be null");
-    Preconditions.checkNotNull(verb, "verb cannot be null");
+    Objects.requireNonNull(path, "Path cannot be null");
+    Objects.requireNonNull(verb, "verb cannot be null");
     
     this.path = path;
     this.regexPath = RegexPathMatcher.fromPath(path); 

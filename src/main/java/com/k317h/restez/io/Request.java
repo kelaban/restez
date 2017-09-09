@@ -11,7 +11,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpHeaders;
+import org.eclipse.jetty.http.HttpHeader;
 
 import com.k317h.restez.HttpMethod;
 import com.k317h.restez.route.RegexPathMatcher.PathParams;
@@ -103,7 +103,7 @@ public class Request {
   }
   
   public String getContentEncoding() {
-    String contentEncoding = rawRequest().getHeader(HttpHeaders.CONTENT_ENCODING);
+    String contentEncoding = rawRequest().getHeader(HttpHeader.CONTENT_ENCODING.asString());
     if (contentEncoding == null) {
         return null;
     }
@@ -112,7 +112,7 @@ public class Request {
   }
   
   public String getAcceptEncoding() {
-    String contentEncoding = rawRequest().getHeader(HttpHeaders.ACCEPT_ENCODING);
+    String contentEncoding = rawRequest().getHeader(HttpHeader.ACCEPT_ENCODING.asString());
     if (contentEncoding == null) {
         return null;
     }

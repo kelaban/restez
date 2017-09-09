@@ -3,6 +3,8 @@ package com.k317h.restez.route;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +14,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
 
 import util.PathUtils;
 
@@ -57,12 +57,12 @@ public class RegexPathMatcher {
       }
     }
 
-    ImmutableMap.Builder<String, String> namedParams = ImmutableMap.builder();
+    Map<String, String> namedParams = new HashMap<>();
     for (String mg : matchGroups) {
       namedParams.put(mg, m.group(mg));
     }
 
-    pp.namedParams = namedParams.build();
+    pp.namedParams = Collections.unmodifiableMap(namedParams);
 
     return pp;
   }

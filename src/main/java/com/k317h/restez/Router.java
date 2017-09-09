@@ -3,12 +3,12 @@ package com.k317h.restez;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.collect.ImmutableList;
 import com.k317h.restez.route.RouteMatch;
 import com.k317h.restez.route.RouteSpec;
 
@@ -102,8 +102,10 @@ public final class Router {
   }
 
   private Collection<Middleware> concatMiddleware(Collection<Middleware> first, Collection<Middleware> second) {
-    ImmutableList.Builder<Middleware> mw = ImmutableList.builder();
-    return mw.addAll(first).addAll(second).build();
+    List<Middleware> mws = new ArrayList<>();
+    mws.addAll(first);
+    mws.addAll(second);
+    return Collections.unmodifiableCollection(mws);
   }
 
 }

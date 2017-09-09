@@ -7,7 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.http.HttpHeaders;
+import org.eclipse.jetty.http.HttpHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class GZIPMiddleware implements Middleware {
       
       res = new GZippedResponse(res);
       
-      res.header(HttpHeaders.CONTENT_ENCODING, "gzip");
+      res.header(HttpHeader.CONTENT_ENCODING.asString(), "gzip");
       usingGzipResponse = true;
     }
     
