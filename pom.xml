@@ -8,8 +8,8 @@
   <packaging>jar</packaging>
 
   <name>restez</name>
-  <url>http://maven.apache.org</url>
-
+  <url>http://k317h.com</url>
+    
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jetty.version>9.3.12.v20160915</jetty.version>

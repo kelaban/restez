@@ -1,6 +1,8 @@
 RESTEZ
 ======
 
+Develop: [![Build Status](https://travis-ci.org/kelaban/restez.svg?branch=develop)](https://travis-ci.org/kelaban/restez)
+
 An easier REST framework for Java. Inspired by ExpressJS for NodeJS.
 
 Example setup with Jetty
