@@ -31,7 +31,7 @@ public class BufferedSend implements Middleware {
     ByteArrayOutputStream buff = new ByteArrayOutputStream();
 
     public BufferedResponse(Response res) {
-      super(res.rawResponse());
+      super(res);
     }
     
     @Override

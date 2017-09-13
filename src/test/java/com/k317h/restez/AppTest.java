@@ -3,6 +3,8 @@ package com.k317h.restez;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -25,6 +27,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 import com.k317h.restez.middleware.BufferedSend;
@@ -40,6 +44,7 @@ public class AppTest {
   private Server server = null;
   private CloseableHttpClient httpclient;
   private Router app;
+  private Serializers serializers;
   
   
   public void initServer() throws Exception {
@@ -49,7 +54,7 @@ public class AppTest {
     server.setHandler(handler);
 
     ServletHolder s = new ServletHolder();
-    s.setServlet(new Application(app));
+    s.setServlet(new Application(app, serializers));
 
     handler.addServletWithMapping(s, "/*");
 
@@ -64,6 +69,7 @@ public class AppTest {
   @Before
   public void before() throws Exception {
     httpclient = HttpClients.createDefault();
+    serializers = new Serializers(true);
     
     app = new Router();
     app.use(new LoggingMiddleware(), (req, res, next) -> {
@@ -128,7 +134,7 @@ public class AppTest {
   }
   
   private void echoPath(Request req, Response res) throws IOException {
-    res.header("Content-Type", "text/plain");
+    res.contentType("text/plain");
     res.send(req.path());
   }
   
@@ -218,5 +224,26 @@ public class AppTest {
     Assert.assertEquals("Hello World!", IOUtils.toString(resp.getEntity().getContent(), Charset.forName("UTF-8")));
   }
   
+  
+  ///////////////////////
+  ///Test Serializers///
+  
+  @Test
+  public void jsonSerialization() throws Exception {
+    Gson gson = new GsonBuilder().create();
+    serializers.registerJsonSerializer(obj -> {
+      return gson.toJson(obj).getBytes();
+    });
+    
+    app.get("/foo", (req, resp) -> {
+      Map<String, String> m = new HashMap<>();
+      m.put("foo", "bar");
+      resp.json(m);
+    });
+    
+    initServer();
+    
+    assertResponse(get("/foo"), "{\"foo\":\"bar\"}");
+  }
   
 }

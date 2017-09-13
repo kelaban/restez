@@ -48,7 +48,7 @@ public class GZIPMiddleware implements Middleware {
     final GZIPInputStream gis;
     
     public GZippedRequest(Request in) throws IOException {
-      super(in.rawRequest(), in.matchedParams());
+      super(in);
       gis = new GZIPInputStream(in.inputStream());
     }
     
@@ -63,7 +63,7 @@ public class GZIPMiddleware implements Middleware {
     final private GZIPOutputStream gzos;
     
     public GZippedResponse(Response in) throws IOException {
-      super(in.rawResponse());
+      super(in);
       gzos = new GZIPOutputStream(in.outputStream()); 
     }
     

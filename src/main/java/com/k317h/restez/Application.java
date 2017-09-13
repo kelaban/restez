@@ -14,10 +14,16 @@ import com.k317h.restez.io.Response;
 import com.k317h.restez.route.RouteMatch;
 
 public class Application extends HttpServlet {
-  private Router router;
+  private final Router router;
+  private final Serializers serializers;
 
   public Application(Router router) {
+    this(router, new Serializers(true));
+  }
+  
+  public Application(Router router, Serializers serializers) {
     this.router = router;
+    this.serializers = serializers;
   }
   
   @Override
@@ -27,7 +33,7 @@ public class Application extends HttpServlet {
       
       if (route.isPresent()) {
         Request request = new Request(httpReq, route.get().parsePathParam(httpReq.getRequestURI()));
-        Response response = new Response(httpRes);
+        Response response = new Response(httpRes, serializers);
         
         try {
           handleRouteMatch(request, response, route.get().getHandler(), route.get().getMiddleware().iterator());
@@ -36,7 +42,7 @@ public class Application extends HttpServlet {
         }
       } else {
         httpRes.setStatus(404);
-        handleRouteMatch(new Request(httpReq, null), new Response(httpRes), null, router.getMiddleware().iterator());
+        handleRouteMatch(new Request(httpReq, null), new Response(httpRes, serializers), null, router.getMiddleware().iterator());
       }
     } catch(Exception e) {
       httpRes.setStatus(500);

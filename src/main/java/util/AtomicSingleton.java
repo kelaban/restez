@@ -1,13 +1,19 @@
 package util;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 public class AtomicSingleton<T> {
+  
+  @FunctionalInterface
+  public interface ThrowingSupplier<T>{
+    public T get() throws IOException;
+  }
+  
   AtomicBoolean isSet = new AtomicBoolean(false);
   T object = null;
 
-  public T getOrSet(Supplier<T> supplier) {
+  public T getOrSet(ThrowingSupplier<T> supplier) throws IOException {
     if (isSet.get()) {
       return object;
     } else {
@@ -17,7 +23,7 @@ public class AtomicSingleton<T> {
     return object;
   }
 
-  private synchronized void setWith(Supplier<T> supplier) {
+  private synchronized void setWith(ThrowingSupplier<T> supplier) throws IOException {
     if (isSet.get()) {
       return;
     }

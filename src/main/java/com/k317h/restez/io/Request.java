@@ -21,13 +21,16 @@ import util.AtomicSingleton;
 public class Request {
   private final HttpServletRequest httpServletRequest;
   private final PathParams matchedParams;
+  
+  public Request(Request in) {
+    this(in.httpServletRequest, in.matchedParams);
+  }
 
   public Request(HttpServletRequest httpServletRequest, PathParams matchedParams) {
     this.httpServletRequest = httpServletRequest;
     this.matchedParams = matchedParams;
   }
 
-  @SuppressWarnings("unchecked")
   public Map<String, String[]> query() {
     return this.httpServletRequest.getParameterMap();
   }
@@ -70,24 +73,17 @@ public class Request {
   
   AtomicSingleton<String> body = new AtomicSingleton<String>();
 
-
-  public Object body() {
+  public String body() throws IOException {
     return body.getOrSet(() -> {
       StringWriter sw = new StringWriter();
-      try {
-        IOUtils.copy(inputStream(), sw, Charset.forName("UTF-8"));
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      IOUtils.copy(inputStream(), sw, Charset.forName("UTF-8"));
       return sw.toString();
     });
   }
 
-
   public String path() {
     return httpServletRequest.getRequestURI();
   }
-
 
   public HttpMethod method() {
     return HttpMethod.valueOf(httpServletRequest.getMethod().toLowerCase());
