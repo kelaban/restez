@@ -1,4 +1,4 @@
-package util;
+package com.k317h.restez.util;
 
 public class PathUtils {
 

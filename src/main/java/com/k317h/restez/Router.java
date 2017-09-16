@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.k317h.restez.route.RouteMatch;
 import com.k317h.restez.route.RouteSpec;
-
-import util.PathUtils;
+import com.k317h.restez.util.PathUtils;
 
 public final class Router {
   List<Middleware> middleware = new ArrayList<Middleware>();

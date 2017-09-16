@@ -1,4 +1,4 @@
-package util;
+package com.k317h.restez.util;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
