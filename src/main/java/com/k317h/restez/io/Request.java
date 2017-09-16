@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,8 +16,7 @@ import org.eclipse.jetty.http.HttpHeader;
 
 import com.k317h.restez.HttpMethod;
 import com.k317h.restez.route.RegexPathMatcher.PathParams;
-
-import util.AtomicSingleton;
+import com.k317h.restez.util.AtomicSingleton;
 
 public class Request {
   private final HttpServletRequest httpServletRequest;
@@ -31,12 +31,18 @@ public class Request {
     this.matchedParams = matchedParams;
   }
 
-  public Map<String, String[]> query() {
-    return this.httpServletRequest.getParameterMap();
+  public Map<String, QueryParam> query() {
+    return this.httpServletRequest
+        .getParameterMap()
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(e -> e.getKey(), e -> this.query(e.getKey())));
   }
   
-  public Optional<String[]> query(String param) {
-    return Optional.ofNullable(query().get(param));
+  public QueryParam query(String param) {
+    return new QueryParam(Optional.ofNullable(
+        this.httpServletRequest.getParameterMap().get(param)
+    ));
   }
 
 
