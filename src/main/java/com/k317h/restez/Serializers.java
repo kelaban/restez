@@ -19,6 +19,10 @@ public class Serializers {
   
   private final boolean failOnMissingSerializer;
   
+  public Serializers() {
+    this(true);
+  }
+  
   public Serializers(boolean failOnMissingSerializer) {
     this.failOnMissingSerializer = failOnMissingSerializer;
   }

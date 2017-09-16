@@ -114,19 +114,20 @@ public class AppTest {
   }
   
   private void assertGet(String path) throws Exception{
-    assertResponse(get(path), path);
+    assertResponse(get(path), path, path.length());
   }
   
   private void assertHead(String path) throws Exception{
-    assertResponse(head(path), null);
+    assertResponse(head(path), null, path.length());
   }
   
-  private void assertResponse(CloseableHttpResponse resp, String body) throws Exception {
-    assertResponse(resp, body, 200);
+  private void assertResponse(CloseableHttpResponse resp, String body, int contentLength) throws Exception {
+    assertResponse(resp, body, contentLength, 200);
   }
   
-  private void assertResponse(CloseableHttpResponse resp, String body, int status) throws Exception {
+  private void assertResponse(CloseableHttpResponse resp, String body, int contentLength, int status) throws Exception {
     Assert.assertEquals(status, resp.getStatusLine().getStatusCode());
+    Assert.assertEquals(""+contentLength, resp.getFirstHeader("content-length").getValue());
     
     HttpEntity entity = resp.getEntity(); 
     String actualBody = null != entity ? IOUtils.toString(entity.getContent(), Charset.forName("UTF-8")) : null;   
@@ -174,16 +175,18 @@ public class AppTest {
   
   @Test
   public void testPost() throws Exception {
+    String expectedResponse = "OK!";
+    
     app.post("/p0$t/:param", (req, res) -> {
       Assert.assertEquals("1", req.params("param"));
       Assert.assertEquals("Hello World!", req.body());
       Assert.assertEquals("Hello World!", req.body());
-      res.send("OK!");
+      res.send(expectedResponse);
     });
     
     initServer();
     
-    assertResponse(post("/p0$t/1", "Hello World!"), "OK!");
+    assertResponse(post("/p0$t/1", "Hello World!"), expectedResponse, expectedResponse.length());
   }
   
   @Test
@@ -194,7 +197,7 @@ public class AppTest {
     
     initServer();
     
-    assertResponse(get("/post/1"), "", 404);
+    assertResponse(get("/post/1"), "", 0, 404);
   }
 
   
@@ -203,16 +206,17 @@ public class AppTest {
   
   @Test
   public void testGZIP() throws Exception {
+    String expectedResponse = "Hello World!";
     app.post("/gzip", (req, res) -> {
       String body = (String)req.body();
-      Assert.assertEquals("Hello World!", body);
+      Assert.assertEquals(expectedResponse, body);
       res.send(body);
     }, new GZIPMiddleware());
     
     initServer();
   
   
-    assertResponse(post("/gzip", "Hello World!"), "Hello World!");
+    assertResponse(post("/gzip", expectedResponse), expectedResponse, expectedResponse.length());
     
     HttpPost post = new HttpPost(u("/gzip"));
     GzipCompressingEntity gzipbody = new GzipCompressingEntity(new StringEntity("Hello World!")); 
@@ -231,9 +235,7 @@ public class AppTest {
   @Test
   public void jsonSerialization() throws Exception {
     Gson gson = new GsonBuilder().create();
-    serializers.registerJsonSerializer(obj -> {
-      return gson.toJson(obj).getBytes();
-    });
+    serializers.registerJsonSerializer(obj -> gson.toJson(obj).getBytes());
     
     app.get("/foo", (req, resp) -> {
       Map<String, String> m = new HashMap<>();
@@ -243,7 +245,9 @@ public class AppTest {
     
     initServer();
     
-    assertResponse(get("/foo"), "{\"foo\":\"bar\"}");
+    String expectedResponse = "{\"foo\":\"bar\"}"; 
+    
+    assertResponse(get("/foo"), expectedResponse, expectedResponse.length());
   }
   
 }

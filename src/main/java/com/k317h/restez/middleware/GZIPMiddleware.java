@@ -7,6 +7,11 @@ import java.lang.invoke.MethodHandles;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponseWrapper;
+
 import org.eclipse.jetty.http.HttpHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,55 +26,97 @@ public class GZIPMiddleware implements Middleware {
   
   @Override
   public void handle(Request req, Response res, Handler next) throws Exception {
-    boolean usingGzipResponse = false;
+    GZippedResponse gzresp = null;
     
     if(isGzipEncoded(req.getContentEncoding())) {
       log.debug("using gzipped request");
-      req = new GZippedRequest(req);
+      req = new Request(req, new GZippedRequest(req));
     }
     
     if(isGzipEncoded(req.getAcceptEncoding())) {
       log.debug("using gzipped response");
       
-      res = new GZippedResponse(res);
+      gzresp = new GZippedResponse(res);
+      res = new Response(res, gzresp);
       
       res.header(HttpHeader.CONTENT_ENCODING.asString(), "gzip");
-      usingGzipResponse = true;
     }
     
     next.handle(req, res);
     
-    if(usingGzipResponse) {
-      ((GZIPOutputStream) res.outputStream()).finish();
+    if(null != gzresp) {
+      gzresp.finish();
     }
   }
   
-  public static class GZippedRequest extends Request {
-    final GZIPInputStream gis;
+  public static class GZippedRequest extends HttpServletRequestWrapper {
+    private final GZIPServletInputStream gis;
     
-    public GZippedRequest(Request in) throws IOException {
-      super(in);
-      gis = new GZIPInputStream(in.inputStream());
+    public GZippedRequest(Request req) throws IOException {
+      super(req.rawRequest());
+      gis = new GZIPServletInputStream(super.getInputStream());
     }
     
     @Override
-    public InputStream inputStream() throws IOException {   
-      return gis;    
+    public ServletInputStream getInputStream() {
+      return gis;
+    }
+    
+  }
+  
+  private static class GZIPServletInputStream extends ServletInputStream {
+    private final GZIPInputStream gis;
+    
+    public GZIPServletInputStream(InputStream source) throws IOException {
+      this.gis = new GZIPInputStream(source);
+    }
+    
+    @Override
+    public int read() throws IOException {
+      return gis.read();
     }
 
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+      return gis.read(b, off, len);
+    }
+    
   }
   
-  public static class GZippedResponse extends Response {
-    final private GZIPOutputStream gzos;
+  
+  public static class GZippedResponse extends HttpServletResponseWrapper {
+    final private GZIPServletOutputStream gzos;
     
     public GZippedResponse(Response in) throws IOException {
-      super(in);
-      gzos = new GZIPOutputStream(in.outputStream()); 
+      super(in.rawResponse());
+      gzos = new GZIPServletOutputStream(super.getOutputStream()); 
     }
     
     @Override
-    public OutputStream outputStream() throws IOException {
+    public ServletOutputStream getOutputStream() throws IOException {
       return gzos;
+    }
+    
+    public void finish() throws IOException {
+      gzos.finish();
+    }
+    
+  }
+  
+  private static class GZIPServletOutputStream extends ServletOutputStream {
+    private final GZIPOutputStream gzos;
+    
+    public GZIPServletOutputStream(OutputStream dest) throws IOException {
+      this.gzos = new GZIPOutputStream(dest);
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+      gzos.write(b);
+    }
+    
+    public void finish() throws IOException {
+      gzos.finish();
     }
     
   }

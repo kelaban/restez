@@ -16,8 +16,9 @@ public class Response {
   private final Serializers serializers;
   int status;
   
-  public Response(Response res) {
-    this(res.httpServletResponse, res.serializers);
+  
+  public Response(Response res, HttpServletResponse httpServletResponse) {
+    this(httpServletResponse, res.serializers);
   }
   
   public Response(HttpServletResponse httpServletResponse, Serializers serializers) {

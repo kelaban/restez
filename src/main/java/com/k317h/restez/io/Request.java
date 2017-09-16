@@ -22,8 +22,8 @@ public class Request {
   private final HttpServletRequest httpServletRequest;
   private final PathParams matchedParams;
   
-  public Request(Request in) {
-    this(in.httpServletRequest, in.matchedParams);
+  public Request(Request in, HttpServletRequest httpServletRequest) {
+    this(httpServletRequest, in.matchedParams);
   }
 
   public Request(HttpServletRequest httpServletRequest, PathParams matchedParams) {
