@@ -31,9 +31,12 @@ git checkout master
 git merge develop
 
 cur_snapshot=$(maven::evaluate project.version)
-release_version=$(echo $cur_version | sed -e 's/-SNAPSHOT//')
+release_version=$(echo $cur_snapshot | sed -e 's/-SNAPSHOT//')
+
+echo "Updating to next version $release_version"
 
 mvn --batch-mode versions:set -DnewVersion=$release_version
+ exit 0
 
 git add pom.xml
 git commit -a -m "[RELEASE] - Preparing release $release_version"
