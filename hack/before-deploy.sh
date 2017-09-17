@@ -5,5 +5,5 @@ DIR=$(dirname "${BASH_SOURCE}")
 
 if should_deploy; then
     openssl aes-256-cbc -K $encrypted_9eca9097811c_key -iv $encrypted_9eca9097811c_iv -in $DIR/codesigning.asc.enc -out $DIR/codesigning.asc -d
-    gpg --fast-import $DIR/signingkey.asc
+    gpg --fast-import $DIR/codesigning.asc
 fi
