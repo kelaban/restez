@@ -83,7 +83,7 @@ Gson gson = new GsonBuilder().create();
 Serializers serializers = new Serializers()
   .registerJsonSerializer(obj -> gson.toJson(obj).getBytes());
 
-Application app = new Application(router, serializers)
+Application app = new Application(router, serializers);
 
-startServer(app)
+startServer(app);
 ```
