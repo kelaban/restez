@@ -36,9 +36,6 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-# TODO REMOVE
-exit 0
-
 resp=$(travis::get "repos/$REPO/branches/develop")
 build_sha=$(echo $resp | jq -r '.commit.sha')
 build_num=$(echo $resp | jq -r '.branch.number')

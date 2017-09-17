@@ -26,10 +26,24 @@ if [ $? -ne 0 ]; then
   exit 1;
 fi
 
+
 git checkout master
 git merge develop
 
 cur_snapshot=$(maven::evaluate project.version)
 release_version=$(echo $cur_version | sed -e 's/-SNAPSHOT//')
 
-mvn --batch-mode release:update-versions -DreleaseVersion=$release_version
+mvn --batch-mode versions:set -DnewVersion=$release_version
+
+git add pom.xml
+git commit -a -m "[RELEASE] - Preparing release $release_version"
+git tag $release_version
+git push origin HEAD
+git push origin --tags HEAD
+
+git merge master
+
+mvn --batch-mode versions:set -DnextSnapshot=true
+git add pom.xml
+git commit -a -m "[RELEASE] - Update to next SNAPSHOT"
+git push origin HEAD
