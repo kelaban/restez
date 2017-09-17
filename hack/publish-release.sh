@@ -46,7 +46,8 @@ git push origin --tags HEAD
 git checkout develop
 git merge master
 
-mvn --batch-mode versions:set -DnextSnapshot=true
+next_version=$(echo $release_version | awk -F "." '{$NF=$NF+1; print}' | tr ' ' '.')
+mvn --batch-mode versions:set -DnextSnapshot=true -DnewVersion=$next_version
 git add pom.xml
 git commit -a -m "[RELEASE] - Update to next SNAPSHOT"
 git push origin HEAD
