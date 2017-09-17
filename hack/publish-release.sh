@@ -43,6 +43,7 @@ git tag $release_version
 git push origin HEAD
 git push origin --tags HEAD
 
+git checkout develop
 git merge master
 
 mvn --batch-mode versions:set -DnextSnapshot=true
