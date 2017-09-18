@@ -38,7 +38,7 @@ echo "Updating to next version $release_version"
 mvn --batch-mode versions:set -DnewVersion=$release_version
 
 git add pom.xml
-git commit -a -m "[RELEASE] - Preparing release $release_version"
+git commit -m "[RELEASE] - Preparing release $release_version"
 git tag $release_version
 git push origin HEAD
 git push origin --tags HEAD
@@ -47,7 +47,7 @@ git checkout develop
 git merge master
 
 next_version=$(echo $release_version | awk -F "." '{$NF=$NF+1; print}' | tr ' ' '.')
-mvn --batch-mode versions:set -DnextSnapshot=true -DnewVersion=$next_version
+mvn --batch-mode versions:set -DnextSnapshot=true -DnewVersion="${next_version}-SNAPSHOT"
 git add pom.xml
-git commit -a -m "[RELEASE] - Update to next SNAPSHOT"
+git commit -m "[RELEASE] - Update to next SNAPSHOT"
 git push origin HEAD
