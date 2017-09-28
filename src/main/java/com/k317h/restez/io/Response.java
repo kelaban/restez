@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.MimeTypes;
 
-import com.k317h.restez.Serializers;
+import com.k317h.restez.serialization.Serializers;
 
 public class Response {
   private final HttpServletResponse httpServletResponse;

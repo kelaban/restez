@@ -1,4 +1,4 @@
-package com.k317h.restez;
+package com.k317h.restez.serialization;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

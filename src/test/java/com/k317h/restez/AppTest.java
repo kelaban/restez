@@ -34,6 +34,9 @@ import com.k317h.restez.io.Response;
 import com.k317h.restez.middleware.BufferedSend;
 import com.k317h.restez.middleware.GZIPMiddleware;
 import com.k317h.restez.middleware.LoggingMiddleware;
+import com.k317h.restez.serialization.Deserializers;
+import com.k317h.restez.serialization.Deserializers.Deserializer;
+import com.k317h.restez.serialization.Serializers;
 
 
 
@@ -45,6 +48,7 @@ public class AppTest {
   private CloseableHttpClient httpclient;
   private Router app;
   private Serializers serializers;
+  private Deserializers deserializers;
   
   
   public void initServer() throws Exception {
@@ -54,7 +58,7 @@ public class AppTest {
     server.setHandler(handler);
 
     ServletHolder s = new ServletHolder();
-    s.setServlet(new Application(app, serializers));
+    s.setServlet(new Application(app, serializers, deserializers));
 
     handler.addServletWithMapping(s, "/*");
 
@@ -70,6 +74,7 @@ public class AppTest {
   public void before() throws Exception {
     httpclient = HttpClients.createDefault();
     serializers = new Serializers(true);
+    deserializers = new Deserializers();
     
     app = new Router();
     app.use(new LoggingMiddleware(), (req, res, next) -> {
@@ -106,6 +111,7 @@ public class AppTest {
   private CloseableHttpResponse post(String path, String body) throws Exception {
     HttpPost post = new HttpPost(u(path));
     post.setEntity(new StringEntity(body));
+    post.setHeader("Content-Type", "application/json");
     return httpclient.execute(post);
   }
   
@@ -233,7 +239,7 @@ public class AppTest {
   ///Test Serializers///
   
   @Test
-  public void jsonSerialization() throws Exception {
+  public void testJsonSerialization() throws Exception {
     Gson gson = new GsonBuilder().create();
     serializers.registerJsonSerializer(obj -> gson.toJson(obj).getBytes());
     
@@ -248,6 +254,38 @@ public class AppTest {
     String expectedResponse = "{\"foo\":\"bar\"}"; 
     
     assertResponse(get("/foo"), expectedResponse, expectedResponse.length());
+  }
+  
+  ////////////////////////
+  ///Test Deserializers//
+  
+  private static class JsonDeserializationBody {
+    String body;
+  }
+  
+  @Test
+  public void testJsonDeserialization() throws Exception {
+    Gson gson = new GsonBuilder().create();
+    
+    deserializers.registerJsonDeserializer(new Deserializer(){
+
+      @Override
+      public <T> T deserialize(byte[] o, Class<T> clazz) throws IOException {
+        return gson.fromJson(new String(o), clazz);
+      }
+      
+    });
+    
+    String expectedResponse = "OK!";
+    
+    app.post("/json", (req, res) -> {
+      Assert.assertEquals("Hello World!", req.body(JsonDeserializationBody.class).body);
+      res.send(expectedResponse);
+    });
+    
+    initServer();
+    
+    assertResponse(post("/json", "{ \"body\": \"Hello World!\"}"), expectedResponse, expectedResponse.length());
   }
   
 }

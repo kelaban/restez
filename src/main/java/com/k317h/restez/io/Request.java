@@ -16,19 +16,22 @@ import org.eclipse.jetty.http.HttpHeader;
 
 import com.k317h.restez.HttpMethod;
 import com.k317h.restez.route.RegexPathMatcher.PathParams;
+import com.k317h.restez.serialization.Deserializers;
 import com.k317h.restez.util.AtomicSingleton;
 
 public class Request {
   private final HttpServletRequest httpServletRequest;
   private final PathParams matchedParams;
+  private final Deserializers deserializers;
   
   public Request(Request in, HttpServletRequest httpServletRequest) {
-    this(httpServletRequest, in.matchedParams);
+    this(httpServletRequest, in.matchedParams, in.deserializers);
   }
 
-  public Request(HttpServletRequest httpServletRequest, PathParams matchedParams) {
+  public Request(HttpServletRequest httpServletRequest, PathParams matchedParams, Deserializers deserializers) {
     this.httpServletRequest = httpServletRequest;
     this.matchedParams = matchedParams;
+    this.deserializers = deserializers;
   }
 
   public Map<String, QueryParam> query() {
@@ -85,6 +88,10 @@ public class Request {
       IOUtils.copy(inputStream(), sw, Charset.forName("UTF-8"));
       return sw.toString();
     });
+  }
+  
+  public <T> T body(Class<T> clazz) throws Exception {
+    return deserializers.deserialize(body().getBytes(), rawRequest().getContentType(), clazz);
   }
 
   public String path() {
