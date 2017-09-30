@@ -58,7 +58,7 @@ public class AppTest {
     server.setHandler(handler);
 
     ServletHolder s = new ServletHolder();
-    s.setServlet(new Application(app, serializers, deserializers));
+    s.setServlet(Application.create(app).withSerializers(serializers).withDeserializers(deserializers).build());
 
     handler.addServletWithMapping(s, "/*");
 

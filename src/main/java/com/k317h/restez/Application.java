@@ -13,7 +13,6 @@ import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 import com.k317h.restez.route.RouteMatch;
 import com.k317h.restez.serialization.Deserializers;
-import com.k317h.restez.serialization.Deserializers.Deserializer;
 import com.k317h.restez.serialization.Serializers;
 
 public class Application extends HttpServlet {
@@ -22,13 +21,50 @@ public class Application extends HttpServlet {
   private final Deserializers deserializers;
 
   public Application(Router router) {
-    this(router, new Serializers(true), new Deserializers());
+    this(router, null, null);
   }
   
-  public Application(Router router, Serializers serializers, Deserializers deserializers) {
+  private Application(Router router, Serializers serializers, Deserializers deserializers) {
+    if(null == serializers) {
+      serializers = new Serializers(true);
+    }
+    
+    if(null == deserializers){
+      deserializers =  new Deserializers();
+    }
+    
     this.router = router;
     this.serializers = serializers;
     this.deserializers = deserializers;
+  }
+  
+  public static Builder create(Router router) {
+    return new Builder(router);
+  }
+  
+  public static class Builder {
+    private final Router router;
+    private Serializers serializers;
+    private Deserializers deserializers;
+    
+    private Builder (Router router) {
+      this.router = router;
+    }
+    
+    public Builder withSerializers(Serializers s) {
+      this.serializers = s;
+      return this;
+    }
+    
+    public Builder withDeserializers(Deserializers s) {
+      this.deserializers = s;
+      return this;
+    }
+    
+    public Application build() {
+      return new Application(router, serializers, deserializers);
+    }
+    
   }
   
   @Override
