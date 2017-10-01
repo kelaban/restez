@@ -7,11 +7,14 @@ import java.util.Map;
 
 import org.eclipse.jetty.http.MimeTypes;
 
+import errors.BadRequestException;
+import errors.SerializationException;
+
 public class Serializers {
   
   @FunctionalInterface
   public interface Serializer {
-    public byte[] serialize(Object o) throws IOException;
+    public byte[] serialize(Object o) throws SerializationException;
   }
   
   private Serializer defaultSerializer = o -> o.toString().getBytes(StandardCharsets.UTF_8);
@@ -50,7 +53,7 @@ public class Serializers {
     
     if(null == s) {
       if(failOnMissingSerializer) {
-        throw new IllegalArgumentException("Serializer for '" + contentType + "' does not exist");
+        throw new SerializationException("Serializer for '" + contentType + "' does not exist");
       }
       return serializeDefault(o);
     } 

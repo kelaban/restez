@@ -1,17 +1,18 @@
 package com.k317h.restez.serialization;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jetty.http.MimeTypes;
 
+import errors.SerializationException;
+
 public class Deserializers {
 
     @FunctionalInterface
     public interface Deserializer {
-      public <T> T deserialize(byte[] o, Class<T> clazz) throws IOException;
+      public <T> T deserialize(byte[] o, Class<T> clazz) throws SerializationException;
     }
 
     private final Map<String, Deserializer> deserializers = new HashMap<>();
@@ -33,7 +34,7 @@ public class Deserializers {
       Deserializer s = deserializers.get(contentType);
 
       if(null == s) {
-        throw new IllegalArgumentException("Deserializer for '" + contentType + "' does not exist");
+        throw new SerializationException("Deserializer for '" + contentType + "' does not exist");
       }
 
       return s.deserialize(o, clazz);

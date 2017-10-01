@@ -4,8 +4,12 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import errors.BadRequestException;
 
 
 
@@ -69,9 +73,34 @@ public class QueryParamTest {
     Assert.assertEquals(now, makeParams(now.toString()).asMappedValue(Instant::parse).get());
   }
   
+  @Test
+  public void testBadNumberFormat() {
+    try {
+      makeParams("foo").asInteger().get();
+    } catch(BadRequestException ex) {
+      Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST, ex.getCode());
+      return;
+    }
+    
+    Assert.fail("should have returned in catch statement");
+  }
+  
+  @Test
+  public void testBadNumberFormatList() {
+    try {
+      makeParams("foo").asListOfIntegers().get();
+    } catch(BadRequestException ex) {
+
+      Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST, ex.getCode());
+      return;
+    }
+    
+    Assert.fail("should have returned in catch statement");
+  }
+  
   
   
   private QueryParam makeParams(String... params) {
-    return new QueryParam(Optional.ofNullable(params));
+    return new QueryParam("test", Optional.ofNullable(params));
   }
 }

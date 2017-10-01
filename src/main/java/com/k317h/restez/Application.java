@@ -1,6 +1,7 @@
 package com.k317h.restez;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -9,13 +10,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 import com.k317h.restez.route.RouteMatch;
 import com.k317h.restez.serialization.Deserializers;
 import com.k317h.restez.serialization.Serializers;
 
+import errors.RestezApiException;
+
 public class Application extends HttpServlet {
+
+  private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final Router router;
   private final Serializers serializers;
   private final Deserializers deserializers;
@@ -78,15 +86,20 @@ public class Application extends HttpServlet {
         
         try {
           handleRouteMatch(request, response, route.get().getHandler(), route.get().getMiddleware().iterator());
+        } catch(RestezApiException e) {
+          log.warn("Uncaught API Exception, it is recommended to setup a custom middleware to catch these", e);
+          httpRes.setStatus(e.getCode());
         } catch (Exception e) {
-          httpRes.setStatus(500);
+          log.warn("Uncaught Exception, it is recommended to setup a custom middleware to catch these", e);
+          httpRes.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
       } else {
-        httpRes.setStatus(404);
+        httpRes.setStatus(HttpServletResponse.SC_NOT_FOUND);
         handleRouteMatch(new Request(httpReq, null, null), new Response(httpRes, serializers), null, router.getMiddleware().iterator());
       }
     } catch(Exception e) {
-      httpRes.setStatus(500);
+      log.error("Unexpected top level exception", e);
+      httpRes.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
  
   }

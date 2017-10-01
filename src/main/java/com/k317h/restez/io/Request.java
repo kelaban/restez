@@ -43,7 +43,9 @@ public class Request {
   }
   
   public QueryParam query(String param) {
-    return new QueryParam(Optional.ofNullable(
+    return new QueryParam(
+        param,
+        Optional.ofNullable(
         this.httpServletRequest.getParameterMap().get(param)
     ));
   }

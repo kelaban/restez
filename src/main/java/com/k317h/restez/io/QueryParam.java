@@ -6,10 +6,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import errors.BadRequestException;
+
 public class QueryParam {
+  private final String name;
   private final Optional<String[]> values;
 
-  public QueryParam(Optional<String[]> values) {
+  public QueryParam(String name, Optional<String[]> values) {
+    this.name = name;
     this.values = values;
   }
 
@@ -76,10 +80,19 @@ public class QueryParam {
   
 
   public <T> Optional<T> asMappedValue(Function<String, T> mapper) {
-    return asString().map(mapper);
+    try {
+      return asString().map(mapper);
+    } catch(Exception e) {
+      throw new BadRequestException("Unable to parse query param '"+name+"':'"+ asString().get() + "' into expected type", e);
+    }
+    
   }
   public <T> Optional<List<T>> asListOfMappedValues(Function<String, T> mapper) {
-    return asListOfStrings().map(ps -> ps.stream().map(mapper).collect(Collectors.toList()));
+    try {
+      return asListOfStrings().map(ps -> ps.stream().map(mapper).collect(Collectors.toList()));
+    } catch(Exception e) {
+      throw new BadRequestException("Unable to parse query param '"+name+"':'"+ asString().get() + "' into expected type", e);
+    }
   }
 
 }

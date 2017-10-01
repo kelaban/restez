@@ -6,6 +6,8 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.entity.GzipCompressingEntity;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 import com.k317h.restez.middleware.BufferedSend;
@@ -37,6 +40,8 @@ import com.k317h.restez.middleware.LoggingMiddleware;
 import com.k317h.restez.serialization.Deserializers;
 import com.k317h.restez.serialization.Deserializers.Deserializer;
 import com.k317h.restez.serialization.Serializers;
+
+import errors.SerializationException;
 
 
 
@@ -77,14 +82,7 @@ public class AppTest {
     deserializers = new Deserializers();
     
     app = new Router();
-    app.use(new LoggingMiddleware(), (req, res, next) -> {
-      try {
-        next.handle(req, res);
-      } catch (Throwable t) {
-        log.error("", t);
-        res.status(500);
-      }
-    }, new BufferedSend());
+    app.use(new LoggingMiddleware(), new BufferedSend());
   }
   
   @After
@@ -268,12 +266,14 @@ public class AppTest {
     Gson gson = new GsonBuilder().create();
     
     deserializers.registerJsonDeserializer(new Deserializer(){
-
       @Override
-      public <T> T deserialize(byte[] o, Class<T> clazz) throws IOException {
-        return gson.fromJson(new String(o), clazz);
+      public <T> T deserialize(byte[] o, Class<T> clazz) throws SerializationException {
+        try {
+          return gson.fromJson(new String(o), clazz);
+        } catch(JsonSyntaxException e) {
+          throw new SerializationException("Unable to parse json", e);
+        } 
       }
-      
     });
     
     String expectedResponse = "OK!";
@@ -286,6 +286,31 @@ public class AppTest {
     initServer();
     
     assertResponse(post("/json", "{ \"body\": \"Hello World!\"}"), expectedResponse, expectedResponse.length());
+  }
+  
+  @Test
+  public void testJsonDeserializationBadSyntax() throws Exception {
+    Gson gson = new GsonBuilder().create();
+    
+    deserializers.registerJsonDeserializer(new Deserializer(){
+      @Override
+      public <T> T deserialize(byte[] o, Class<T> clazz) throws SerializationException {
+        try {
+          return gson.fromJson(new String(o), clazz);
+        } catch(JsonSyntaxException e) {
+          throw new SerializationException("Unable to parse json", e);
+        }
+      }
+    });
+    
+    app.post("/json", (req, res) -> {
+      req.body(JsonDeserializationBody.class);
+      Assert.fail("Deserializer should throw exception");
+    });
+    
+    initServer();
+    
+    assertResponse(post("/json", "{ \"body\": \"Hello World!"), "", 0, HttpServletResponse.SC_BAD_REQUEST);
   }
   
 }
