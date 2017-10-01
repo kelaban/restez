@@ -29,11 +29,11 @@ public class Deserializers {
       return this;
     }
 
-    public <T> T deserialize(byte[] o, String type, Class<T> clazz) throws IOException {
-      Deserializer s = deserializers.get(type);
+    public <T> T deserialize(byte[] o, String contentType, Class<T> clazz) throws IOException {
+      Deserializer s = deserializers.get(contentType);
 
       if(null == s) {
-        throw new IllegalArgumentException("Deserializer for " + type + " does not exist");
+        throw new IllegalArgumentException("Deserializer for '" + contentType + "' does not exist");
       }
 
       return s.deserialize(o, clazz);

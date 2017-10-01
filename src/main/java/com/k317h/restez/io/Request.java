@@ -111,7 +111,7 @@ public class Request {
     return matchedParams;
   }
   
-  public String getContentEncoding() {
+  public String contentEncoding() {
     String contentEncoding = rawRequest().getHeader(HttpHeader.CONTENT_ENCODING.asString());
     if (contentEncoding == null) {
         return null;
@@ -120,7 +120,7 @@ public class Request {
     return contentEncoding;
   }
   
-  public String getAcceptEncoding() {
+  public String acceptEncoding() {
     String contentEncoding = rawRequest().getHeader(HttpHeader.ACCEPT_ENCODING.asString());
     if (contentEncoding == null) {
         return null;

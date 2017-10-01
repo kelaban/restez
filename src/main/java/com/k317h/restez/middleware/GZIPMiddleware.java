@@ -28,12 +28,12 @@ public class GZIPMiddleware implements Middleware {
   public void handle(Request req, Response res, Handler next) throws Exception {
     GZippedResponse gzresp = null;
     
-    if(isGzipEncoded(req.getContentEncoding())) {
+    if(isGzipEncoded(req.contentEncoding())) {
       log.debug("using gzipped request");
       req = new Request(req, new GZippedRequest(req));
     }
     
-    if(isGzipEncoded(req.getAcceptEncoding())) {
+    if(isGzipEncoded(req.acceptEncoding())) {
       log.debug("using gzipped response");
       
       gzresp = new GZippedResponse(res);

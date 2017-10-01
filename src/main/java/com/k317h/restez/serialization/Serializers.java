@@ -45,12 +45,12 @@ public class Serializers {
     return defaultSerializer.serialize(o);
   }
   
-  public byte[] serialize(Object o, String type) throws IOException {
-    Serializer s = serializers.get(type);
+  public byte[] serialize(Object o, String contentType) throws IOException {
+    Serializer s = serializers.get(contentType);
     
     if(null == s) {
       if(failOnMissingSerializer) {
-        throw new IllegalArgumentException("Serializer for " + type + " does not exist");
+        throw new IllegalArgumentException("Serializer for '" + contentType + "' does not exist");
       }
       return serializeDefault(o);
     } 
