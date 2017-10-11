@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.k317h.restez.http.HttpHeader;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.http.HttpHeader;
 
 import com.k317h.restez.HttpMethod;
 import com.k317h.restez.route.RegexPathMatcher.PathParams;

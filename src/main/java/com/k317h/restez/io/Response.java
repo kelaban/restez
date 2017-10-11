@@ -6,8 +6,8 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.k317h.restez.http.MimeTypes;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.http.MimeTypes;
 
 import com.k317h.restez.serialization.Serializers;
 
@@ -41,7 +41,7 @@ public class Response {
   } 
   
   public Response json(Object body) throws IOException {
-    contentType(MimeTypes.Type.APPLICATION_JSON.asString());
+    contentType(MimeTypes.APPLICATION_JSON);
     return send(body);
   }
 

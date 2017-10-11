@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 
-import errors.BadRequestException;
+import com.k317h.restez.errors.BadRequestException;
 
 
 

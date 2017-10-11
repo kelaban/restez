@@ -5,10 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jetty.http.MimeTypes;
+import com.k317h.restez.http.MimeTypes;
 
-import errors.BadRequestException;
-import errors.SerializationException;
+import com.k317h.restez.errors.SerializationException;
 
 public class Serializers {
   
@@ -31,7 +30,7 @@ public class Serializers {
   }
   
   public Serializers registerJsonSerializer(Serializer jsonSerializer) {
-    return registerSerializer(MimeTypes.Type.APPLICATION_JSON.toString(), jsonSerializer);
+    return registerSerializer(MimeTypes.APPLICATION_JSON, jsonSerializer);
   }
   
   public Serializers registerDefaultSerializer(Serializer defaultSerializer) {

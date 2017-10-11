@@ -1,4 +1,4 @@
-package errors;
+package com.k317h.restez.errors;
 
 import javax.servlet.http.HttpServletResponse;
 

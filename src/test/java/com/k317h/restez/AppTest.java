@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.k317h.restez.errors.SerializationException;
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 import com.k317h.restez.middleware.BufferedSend;
@@ -40,8 +41,6 @@ import com.k317h.restez.middleware.LoggingMiddleware;
 import com.k317h.restez.serialization.Deserializers;
 import com.k317h.restez.serialization.Deserializers.Deserializer;
 import com.k317h.restez.serialization.Serializers;
-
-import errors.SerializationException;
 
 
 

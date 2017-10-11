@@ -1,4 +1,4 @@
-package errors;
+package com.k317h.restez.errors;
 
 /**
  * This is a marker class for serialization exceptions. Sometimes it

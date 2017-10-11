@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jetty.http.MimeTypes;
 
-import errors.SerializationException;
+import com.k317h.restez.errors.SerializationException;
+import com.k317h.restez.http.MimeTypes;
 
 public class Deserializers {
 
@@ -21,7 +21,7 @@ public class Deserializers {
 
 
     public Deserializers registerJsonDeserializer(Deserializer jsonDeserializer) {
-      return registerSerializer(MimeTypes.Type.APPLICATION_JSON.toString(), jsonDeserializer);
+      return registerSerializer(MimeTypes.APPLICATION_JSON, jsonDeserializer);
     }
 
 

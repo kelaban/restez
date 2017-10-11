@@ -1,4 +1,4 @@
-package errors;
+package com.k317h.restez.errors;
 
 public class RestezApiException extends RuntimeException {
   

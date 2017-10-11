@@ -13,13 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.k317h.restez.errors.RestezApiException;
 import com.k317h.restez.io.Request;
 import com.k317h.restez.io.Response;
 import com.k317h.restez.route.RouteMatch;
 import com.k317h.restez.serialization.Deserializers;
 import com.k317h.restez.serialization.Serializers;
-
-import errors.RestezApiException;
 
 public class Application extends HttpServlet {
 

@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import errors.BadRequestException;
+import com.k317h.restez.errors.BadRequestException;
 
 public class QueryParam {
   private final String name;
