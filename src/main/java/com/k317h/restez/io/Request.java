@@ -97,7 +97,7 @@ public class Request {
   }
 
   public String path() {
-    return httpServletRequest.getRequestURI();
+    return httpServletRequest.getPathInfo();
   }
 
   public HttpMethod method() {

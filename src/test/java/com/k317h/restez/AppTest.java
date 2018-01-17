@@ -2,6 +2,7 @@ package com.k317h.restez;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,11 +11,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -42,9 +46,11 @@ import com.k317h.restez.serialization.Deserializers;
 import com.k317h.restez.serialization.Deserializers.Deserializer;
 import com.k317h.restez.serialization.Serializers;
 
+import static org.junit.Assert.assertEquals;
 
 
 public class AppTest {
+
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   
   private int port = 8080;
@@ -53,9 +59,8 @@ public class AppTest {
   private Router app;
   private Serializers serializers;
   private Deserializers deserializers;
-  
-  
-  public void initServer() throws Exception {
+
+  private void initServer() throws Exception {
     server = new Server(port);
 
     ServletHandler handler = new ServletHandler();
@@ -92,28 +97,35 @@ public class AppTest {
     
     httpclient.close();
   }
+
+  private CloseableHttpResponse request(HttpRequestBase base, String path) throws Exception {
+    base.setURI(new URIBuilder()
+        .setPath(path)
+        .setScheme("http")
+        .setPort(port)
+        .setHost("localhost")
+        .build());
+
+    log.info("Request URL: {}", base.getURI().toString());
+    CloseableHttpResponse res = httpclient.execute(base);
+    log.info("Received response: {}", res.toString());
+
+    return res;
+  }
   
   private CloseableHttpResponse get(String path) throws Exception {
-    CloseableHttpResponse res = httpclient.execute(new HttpGet(u(path)));
-    log.info("{}", res.toString());
-    return res;
+    return request(new HttpGet(), path);
   }
   
   private CloseableHttpResponse head(String path) throws Exception {
-    CloseableHttpResponse res = httpclient.execute(new HttpHead(u(path)));
-    log.info("{}", res.toString());
-    return res;
+    return request(new HttpHead(), path);
   }
   
   private CloseableHttpResponse post(String path, String body) throws Exception {
-    HttpPost post = new HttpPost(u(path));
-    post.setEntity(new StringEntity(body));
+    HttpPost post = new HttpPost();
     post.setHeader("Content-Type", "application/json");
-    return httpclient.execute(post);
-  }
-  
-  private String u(String path) {
-    return "http://localhost:" + port + path;
+    post.setEntity(new StringEntity(body));
+    return request(post, path);
   }
   
   private void assertGet(String path) throws Exception{
@@ -125,16 +137,16 @@ public class AppTest {
   }
   
   private void assertResponse(CloseableHttpResponse resp, String body, int contentLength) throws Exception {
-    assertResponse(resp, body, contentLength, 200);
+    assertResponse(resp, body, contentLength, HttpStatus.SC_OK);
   }
   
   private void assertResponse(CloseableHttpResponse resp, String body, int contentLength, int status) throws Exception {
-    Assert.assertEquals(status, resp.getStatusLine().getStatusCode());
-    Assert.assertEquals(""+contentLength, resp.getFirstHeader("content-length").getValue());
+    assertEquals(status, resp.getStatusLine().getStatusCode());
+    assertEquals(""+contentLength, resp.getFirstHeader("content-length").getValue());
     
     HttpEntity entity = resp.getEntity(); 
     String actualBody = null != entity ? IOUtils.toString(entity.getContent(), Charset.forName("UTF-8")) : null;   
-    Assert.assertEquals(body, actualBody);
+    assertEquals(body, actualBody);
   }
   
   private void echoPath(Request req, Response res) throws IOException {
@@ -144,7 +156,6 @@ public class AppTest {
   
   @Test
   public void testPathParams() throws Exception {
-    
     app.get("/a/b/c", this::echoPath);
 
     app.get("/:a/:b/:c", this::echoPath);
@@ -175,15 +186,14 @@ public class AppTest {
     assertGet("/a");
   }
   
-  
   @Test
   public void testPost() throws Exception {
     String expectedResponse = "OK!";
     
     app.post("/p0$t/:param", (req, res) -> {
-      Assert.assertEquals("1", req.params("param"));
-      Assert.assertEquals("Hello World!", req.body());
-      Assert.assertEquals("Hello World!", req.body());
+      assertEquals("1", req.params("param"));
+      assertEquals("Hello World!", req.body());
+      assertEquals("Hello World!", req.body());
       res.send(expectedResponse);
     });
     
@@ -200,10 +210,34 @@ public class AppTest {
     
     initServer();
     
-    assertResponse(get("/post/1"), "", 0, 404);
+    assertResponse(get("/post/1"), "", 0, HttpStatus.SC_NOT_FOUND);
   }
 
-  
+  @Test
+  public void testDecodesParams() throws Exception {
+    String param = "hello world";
+
+    app.get("/hello/:param", (req, res) -> {
+      assertEquals(param, req.params("param"));
+      res.status(HttpStatus.SC_OK);
+    });
+
+    initServer();
+
+    assertResponse(get("/hello/hello world"), "", 0, HttpStatus.SC_OK);
+  }
+
+  @Test
+  public void testMatchesWithEscapedPath() throws Exception {
+    app.get("/hello world/:param", (req, res) -> {
+      res.status(HttpStatus.SC_OK);
+    });
+
+    initServer();
+
+    assertResponse(get("/hello world/1"), "", 0, HttpStatus.SC_OK);
+  }
+
   ///////////////////////////////////
   ///GZIP TESTS/////////////////////
   
@@ -211,23 +245,23 @@ public class AppTest {
   public void testGZIP() throws Exception {
     String expectedResponse = "Hello World!";
     app.post("/gzip", (req, res) -> {
-      String body = (String)req.body();
+      String body = req.body();
       Assert.assertEquals(expectedResponse, body);
       res.send(body);
     }, new GZIPMiddleware());
-    
+
     initServer();
-  
-  
+
     assertResponse(post("/gzip", expectedResponse), expectedResponse, expectedResponse.length());
-    
-    HttpPost post = new HttpPost(u("/gzip"));
-    GzipCompressingEntity gzipbody = new GzipCompressingEntity(new StringEntity("Hello World!")); 
+
+    HttpPost post = new HttpPost();
+    GzipCompressingEntity gzipbody = new GzipCompressingEntity(new StringEntity("Hello World!"));
     post.setEntity(gzipbody);
     post.addHeader("Accept-Encoding", "gzip");
-    CloseableHttpResponse resp = httpclient.execute(post);
-    
-    Assert.assertEquals(200, resp.getStatusLine().getStatusCode());
+
+    CloseableHttpResponse resp = request(post, "/gzip");
+
+    Assert.assertEquals(HttpStatus.SC_OK, resp.getStatusLine().getStatusCode());
     Assert.assertEquals("Hello World!", IOUtils.toString(resp.getEntity().getContent(), Charset.forName("UTF-8")));
   }
   
@@ -278,7 +312,7 @@ public class AppTest {
     String expectedResponse = "OK!";
     
     app.post("/json", (req, res) -> {
-      Assert.assertEquals("Hello World!", req.body(JsonDeserializationBody.class).body);
+      assertEquals("Hello World!", req.body(JsonDeserializationBody.class).body);
       res.send(expectedResponse);
     });
     
