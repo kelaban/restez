@@ -80,7 +80,7 @@ public class Application extends HttpServlet {
       Optional<RouteMatch> route = router.match(httpReq);
       
       if (route.isPresent()) {
-        Request request = new Request(httpReq, route.get().parsePathParam(httpReq.getRequestURI()), deserializers);
+        Request request = new Request(httpReq, route.get().parsePathParam(httpReq.getPathInfo()), deserializers);
         Response response = new Response(httpRes, serializers);
         
         try {

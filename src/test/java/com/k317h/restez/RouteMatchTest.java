@@ -43,7 +43,12 @@ public class RouteMatchTest {
       public String getRequestURI() {
         return path;
       }
-      
+
+      @Override
+      public String getPathInfo() {
+        return getRequestURI();
+      }
+
       @Override
       public String getMethod() {
         return method.toString().toUpperCase();
