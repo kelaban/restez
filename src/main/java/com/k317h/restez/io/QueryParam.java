@@ -24,6 +24,10 @@ public class QueryParam {
       return Optional.empty();
     }
   };
+  
+  public int size() {
+    return values.map(v -> v.length).orElse(0);
+  }
 
   public Optional<String> asString() {
     return values.flatMap(PARAM_TO_FIRST_VALUE);
