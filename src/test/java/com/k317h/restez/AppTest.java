@@ -2,10 +2,12 @@ package com.k317h.restez;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -122,8 +124,12 @@ public class AppTest {
   }
   
   private CloseableHttpResponse post(String path, String body) throws Exception {
+    return postWithContentType(path, body, "application/json");
+  }
+
+  private CloseableHttpResponse postWithContentType(String path, String body, String contentType) throws Exception {
     HttpPost post = new HttpPost();
-    post.setHeader("Content-Type", "application/json");
+    post.setHeader("Content-Type", contentType);
     post.setEntity(new StringEntity(body));
     return request(post, path);
   }
@@ -345,5 +351,61 @@ public class AppTest {
     
     assertResponse(post("/json", "{ \"body\": \"Hello World!"), "", 0, HttpServletResponse.SC_BAD_REQUEST);
   }
-  
+
+  private static class HelloWorld {
+    private String hello;
+
+    public HelloWorld(String name) {
+      this.hello = name;
+    }
+  }
+
+  @Test
+  public void testContentTypeHeaders() throws Exception {
+    HelloWorld helloWorld = new HelloWorld("world");
+
+    Gson gson = new GsonBuilder().create();
+    serializers.registerJsonSerializer(obj -> gson.toJson(obj).getBytes());
+    deserializers.registerJsonDeserializer(new Deserializer(){
+      @Override
+      public <T> T deserialize(byte[] o, Class<T> clazz) throws SerializationException {
+        try {
+          return gson.fromJson(new String(o), clazz);
+        } catch(JsonSyntaxException e) {
+          throw new SerializationException("Unable to parse json", e);
+        }
+      }
+    });
+
+    String helloWorldJson = gson.toJson(helloWorld);
+
+    AtomicReference<Integer> count = new AtomicReference<>(0);
+
+    app.post("/contentTypeTest", (req, resp) -> {
+      HelloWorld body = req.body(HelloWorld.class);
+      count.updateAndGet(v -> v + 1);
+      resp.status(HttpStatus.SC_OK).json(helloWorld);
+    });
+
+    initServer();
+
+    List<String> contentTypes = Arrays.asList(
+        "application/json",
+        "application/json; charset=utf8",
+        "application/json; charset=utf8",
+        "application/json;charset=utf8",
+        "application/json ;charset=utf8",
+        "application/json ; charset=utf8"
+    );
+
+    for (String contentType : contentTypes) {
+      assertResponse(
+          postWithContentType("/contentTypeTest", "{}", contentType),
+          helloWorldJson,
+          helloWorldJson.length());
+    }
+
+    assertEquals(contentTypes.size(), count.get().longValue());
+  }
+
 }
